@@ -60,7 +60,7 @@ class ConfigurationProvider<T>
     }
 
     @Override
-    public T get()
+    public T get() ///返回一个
     {
         requireNonNull(configurationFactory, "configurationFactory");
 

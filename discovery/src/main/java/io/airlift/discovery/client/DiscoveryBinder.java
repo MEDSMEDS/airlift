@@ -50,7 +50,7 @@ public class DiscoveryBinder
         this.serviceAnnouncementBinder = newSetBinder(binder, ServiceAnnouncement.class);
     }
 
-    public void bindSelector(String type)
+    public void bindSelector(String type)/// 重要 discoveryBinder(binder).bindSelector("presto");
     {
         requireNonNull(type, "type is null");
         bindSelector(serviceType(type));
@@ -98,7 +98,7 @@ public class DiscoveryBinder
         bindHttpSelector(serviceType(type));
     }
 
-    public void bindHttpSelector(ServiceType serviceType)
+    public void bindHttpSelector(ServiceType serviceType)///先绑定一个底层的selector
     {
         requireNonNull(serviceType, "serviceType is null");
         bindSelector(serviceType);
@@ -106,7 +106,7 @@ public class DiscoveryBinder
     }
 
     static class HttpAnnouncementProvider
-            implements Provider<ServiceAnnouncement>
+            implements Provider<ServiceAnnouncement> ///addProperty on http
     {
         private final ServiceAnnouncementBuilder builder;
         private AnnouncementHttpServerInfo httpServerInfo;

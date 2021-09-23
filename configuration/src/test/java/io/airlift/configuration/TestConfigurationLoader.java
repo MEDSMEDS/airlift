@@ -123,11 +123,11 @@ public class TestConfigurationLoader
         System.clearProperty("config");
     }
 
-    private File createConfigFile(Consumer<PrintStream> contentProvider)
+    private File createConfigFile(Consumer<PrintStream> contentProvider)///consumer
             throws IOException
     {
         File file = File.createTempFile("config", ".properties", tempDir);
-        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {
+        try (PrintStream out = new PrintStream(new FileOutputStream(file))) {///https://www.geeksforgeeks.org/java-io-printstream-class-java-set-1/
             contentProvider.accept(out);
         }
         return file;

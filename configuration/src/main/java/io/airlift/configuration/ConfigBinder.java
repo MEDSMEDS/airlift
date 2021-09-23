@@ -18,7 +18,7 @@ public class ConfigBinder
     public static ConfigBinder configBinder(Binder binder)
     {
         return new ConfigBinder(new GuiceConfigBinder(binder));
-    }
+    }///主要用这个
 
     static ConfigBinder configBinder(ConfigurationFactory configurationFactory, Optional<Object> bindingSource)
     {
@@ -66,7 +66,7 @@ public class ConfigBinder
             listenerMultibinder.addBinding().toInstance(new ConfigurationBindingListenerHolder(configurationBindingListener));
         }
 
-        private <T> Multibinder<ConfigDefaultsHolder<T>> createConfigDefaultsBinder(Key<T> key)
+        private <T> Multibinder<ConfigDefaultsHolder<T>> createConfigDefaultsBinder(Key<T> key) ///side effect???
         {
             TypeLiteral<ConfigDefaultsHolder<T>> typeLiteral = getTypeLiteral(key);
 
@@ -174,7 +174,7 @@ public class ConfigBinder
         bindConfig(Key.get(configClass, annotation), configClass, prefix);
     }
 
-    public <T> void bindConfig(Key<T> key, Class<T> configClass, String prefix)
+    public <T> void bindConfig(Key<T> key, Class<T> configClass, String prefix)///实际用到的函数
     {
         binder.bind(new ConfigurationBinding<>(key, configClass, Optional.ofNullable(prefix)));
     }

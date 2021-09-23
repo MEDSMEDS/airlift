@@ -74,7 +74,7 @@ public class CachingServiceSelector
     }
 
     @PostConstruct
-    public void start()
+    public void start() ///自启动
     {
         if (started.compareAndSet(false, true)) {
             Preconditions.checkState(!executor.isShutdown(), "CachingServiceSelector has been destroyed");

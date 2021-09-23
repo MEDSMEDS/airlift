@@ -25,7 +25,7 @@ def find_install_path(f):
     """Find canonical parent of bin/launcher.py"""
     if basename(f) != 'launcher.py':
         raise Exception("Expected file '%s' to be 'launcher.py' not '%s'" % (f, basename(f)))
-    p = realpath(dirname(f))
+    p = realpath(dirname(f)) # 绝对路径。getcwd()会受chdir()影响。
     if basename(p) != 'bin':
         raise Exception("Expected file '%s' directory to be 'bin' not '%s" % (f, basename(p)))
     return dirname(p)
@@ -124,7 +124,7 @@ class Process:
 def redirect_stdin_to_devnull():
     """Redirect stdin to /dev/null"""
     fd = os.open(os.devnull, O_RDWR)
-    os.dup2(fd, sys.stdin.fileno())
+    os.dup2(fd, sys.stdin.fileno()) # https://blog.csdn.net/silent123go/article/details/71108501
     os.close(fd)
 
 
@@ -178,7 +178,16 @@ def create_app_symlinks(options):
             pathjoin(options.install_path, 'plugin'),
             pathjoin(options.data_dir, 'plugin'))
 
-
+# 1: java. -cp /data/avonxu/presto/presto-server-0.242.1-SNAPSHOT/lib/*
+# 2: jvm. -server -Xmx169G -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -Djdk.attach.allowAttachSelf=true -XX:+ExitOnOutOfMemoryError -Dlog4j.configurationFile=/data/avonxu/presto-server-0.239/1.log
+# 3: daemon. -Dlog.output-file=/var/presto239/data/var/log/server.log
+# 4: node.config单独拿出来. -Dnode.data-dir=/var/presto239/data
+# 5: node.config单独拿出来. -Dnode.id=ffffffff-ffff-ffff-ffff-ffffffffffff
+# 6: node.config单独拿出来. -Dnode.environment=production_242
+# 7: daemon. -Dlog.enable-console=false
+# 8 日志级别. -Dlog.levels-file=/data/avonxu/presto/presto-server-0.242.1-SNAPSHOT/etc/log.properties
+# 9 Presto配置文件. -Dconfig=/data/avonxu/presto/presto-server-0.242.1-SNAPSHOT/etc/config.properties
+# 10 main class. com.facebook.presto.server.PrestoServer 10
 def build_java_execution(options, daemon):
     if not exists(options.config_path):
         raise Exception('Config file is missing: %s' % options.config_path)
@@ -192,26 +201,26 @@ def build_java_execution(options, daemon):
     properties = options.properties.copy()
 
     if exists(options.log_levels):
-        properties['log.levels-file'] = options.log_levels
+        properties['log.levels-file'] = options.log_levels # 8
 
-    if daemon:
-        properties['log.output-file'] = options.server_log
-        properties['log.enable-console'] = 'false'
+    if daemon: # start专用
+        properties['log.output-file'] = options.server_log # 3
+        properties['log.enable-console'] = 'false' # 7
 
-    jvm_properties = load_lines(options.jvm_config)
-    launcher_properties = load_properties(options.launcher_config)
+    jvm_properties = load_lines(options.jvm_config) # 2
+    launcher_properties = load_properties(options.launcher_config) # 10.1
 
     try:
         main_class = launcher_properties['main-class']
     except KeyError:
         raise Exception("Launcher config is missing 'main-class' property")
 
-    properties['config'] = options.config_path
+    properties['config'] = options.config_path # 9
 
-    system_properties = ['-D%s=%s' % i for i in properties.items()]
-    classpath = pathjoin(options.install_path, 'lib', '*')
+    system_properties = ['-D%s=%s' % i for i in properties.items()] # D 表示Java的SystemProperty
+    classpath = pathjoin(options.install_path, 'lib', '*') # 10.2
 
-    command = ['java', '-cp', classpath]
+    command = ['java', '-cp', classpath] # 1
     command += jvm_properties + system_properties
     command += [main_class]
 
@@ -242,13 +251,13 @@ def run(process, options):
     args, env = build_java_execution(options, False)
 
     makedirs(options.data_dir)
-    os.chdir(options.data_dir)
+    os.chdir(options.data_dir) # 更改工作目录
 
     process.write_pid(os.getpid())
 
     redirect_stdin_to_devnull()
 
-    os.execvpe(args[0], args, env)
+    os.execvpe(args[0], args, env) # https://blog.csdn.net/u014530704/article/details/73848573
 
 
 def start(process, options):
@@ -344,7 +353,7 @@ def handle_command(command, options):
 
 def create_parser():
     commands = 'Commands: ' + ', '.join(COMMANDS)
-    parser = OptionParser(prog='launcher', usage='usage: %prog [options] command', description=commands)
+    parser = OptionParser(prog='launcher', usage='usage: %prog [options] command', description=commands) # 都可以在帮助消息里通过 %(prog)s 格式串来引用
     parser.add_option('-v', '--verbose', action='store_true', default=False, help='Run verbosely')
     parser.add_option('--etc-dir', metavar='DIR', help='Defaults to INSTALL_PATH/etc')
     parser.add_option('--launcher-config', metavar='FILE', help='Defaults to INSTALL_PATH/bin/launcher.properties')
@@ -358,7 +367,32 @@ def create_parser():
     parser.add_option('--server-log-file', metavar='FILE', help='Defaults to DATA_DIR/var/log/server.log (only in daemon mode)')
     parser.add_option('-D', action='append', metavar='NAME=VALUE', dest='properties', help='Set a Java system property')
     return parser
-
+    # 注意metrametavar
+# https://docs.python.org/zh-cn/3/library/argparse.html#metavar
+# Usage: launcher [options] command
+# Commands: run, start, stop, restart, kill, status
+#
+# Options:
+#   -h, --help            show this help message and exit
+#   -v, --verbose         Run verbosely
+#   --etc-dir=DIR         Defaults to INSTALL_PATH/etc
+#   --launcher-config=FILE
+#                         Defaults to INSTALL_PATH/bin/launcher.properties
+#   --node-config=FILE    Defaults to ETC_DIR/node.properties
+#   --jvm-config=FILE     Defaults to ETC_DIR/jvm.config
+#   --config=FILE         Defaults to ETC_DIR/config.properties
+#   --log-levels-file=FILE
+#                         Defaults to ETC_DIR/log.properties
+#   --data-dir=DIR        Defaults to INSTALL_PATH
+#   --pid-file=FILE       Defaults to DATA_DIR/var/run/launcher.pid
+#   --arg=ARG             Add a program argument of the Java application
+#   --launcher-log-file=FILE
+#                         Defaults to DATA_DIR/var/log/launcher.log (only in
+#                         daemon mode)
+#   --server-log-file=FILE
+#                         Defaults to DATA_DIR/var/log/server.log (only in
+#                         daemon mode)
+#   -D NAME=VALUE         Set a Java system property
 
 def parse_properties(parser, args):
     properties = {}
@@ -392,7 +426,7 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    if len(args) != 1:
+    if len(args) != 1: # 一个具体的命令
         if len(args) == 0:
             parser.error('command name not specified')
         else:
@@ -410,8 +444,11 @@ def main():
 
     o = Options()
     o.verbose = options.verbose
-    o.install_path = install_path
+    o.install_path = install_path # 自动获取安装路径
     o.launcher_config = realpath(options.launcher_config or pathjoin(o.install_path, 'bin/launcher.properties'))
+    # main-class=com.facebook.presto.server.PrestoServer
+    # process-name=presto-server
+
     o.etc_dir = realpath(options.etc_dir or pathjoin(o.install_path, 'etc'))
     o.node_config = realpath(options.node_config or pathjoin(o.etc_dir, 'node.properties'))
     o.jvm_config = realpath(options.jvm_config or pathjoin(o.etc_dir, 'jvm.config'))
@@ -424,17 +461,20 @@ def main():
 
     node_properties = {}
     if exists(o.node_config):
-        node_properties = load_properties(o.node_config)
+        node_properties = load_properties(o.node_config) # 导入node.properties
 
     data_dir = node_properties.get('node.data-dir')
-    o.data_dir = realpath(options.data_dir or data_dir or o.install_path)
+    o.data_dir = realpath(options.data_dir or data_dir or o.install_path) # 数据输出路径 优先级：1）当前参数 2）文件中路径 3）安装路径
 
     o.pid_file = realpath(options.pid_file or pathjoin(o.data_dir, 'var/run/launcher.pid'))
     o.launcher_log = realpath(options.launcher_log_file or pathjoin(o.data_dir, 'var/log/launcher.log'))
     o.server_log = realpath(options.server_log_file or pathjoin(o.data_dir, 'var/log/server.log'))
+# data_dir/var/run/launcher.pid
+# data_dir/var/log/launcher.log
+# data_dir/var/log/server.log
 
-    o.properties = parse_properties(parser, options.properties or {})
-    for k, v in node_properties.items():
+    o.properties = parse_properties(parser, options.properties or {}) # 当前启动命令的-D参数。
+    for k, v in node_properties.items(): # 当前启动命令的-D参数优先级高。将node.properties导入系统参数
         if k not in o.properties:
             o.properties[k] = v
 

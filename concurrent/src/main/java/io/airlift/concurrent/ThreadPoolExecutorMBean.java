@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 @Beta
-public class ThreadPoolExecutorMBean
+public class ThreadPoolExecutorMBean /// mbean，使用注解，返回一些变量值。
 {
     private final ThreadPoolExecutor threadPoolExecutor;
 

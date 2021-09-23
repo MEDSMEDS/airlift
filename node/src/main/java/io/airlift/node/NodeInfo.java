@@ -38,7 +38,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
-@Singleton
+@Singleton ///bind(NodeInfo.class).in(Scopes.SINGLETON)
 public class NodeInfo
 {
     private final String environment;
@@ -73,9 +73,9 @@ public class NodeInfo
                 config.getInternalAddressSource());
     }
 
-    public NodeInfo(String environment,
+    public NodeInfo(String environment,/// node.environment=production_242
             String pool,
-            String nodeId,
+            String nodeId,/// node.id=ffffffff-ffff-ffff-ffff-ffffffffffff
             String internalAddress,
             InetAddress bindIp,
             String externalAddress,

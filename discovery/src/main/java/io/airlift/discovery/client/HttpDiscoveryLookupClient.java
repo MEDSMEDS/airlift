@@ -50,7 +50,7 @@ import static java.util.Objects.requireNonNull;
 public class HttpDiscoveryLookupClient
         implements DiscoveryLookupClient
 {
-    private final String environment;
+    private final String environment; /// bindHttpAnnouncement("skeleton")传入
     private final Supplier<URI> discoveryServiceURI;
     private final NodeInfo nodeInfo;
     private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
@@ -58,7 +58,7 @@ public class HttpDiscoveryLookupClient
 
     @Inject
     public HttpDiscoveryLookupClient(
-            @ForDiscoveryClient Supplier<URI> discoveryServiceURI,
+            @ForDiscoveryClient Supplier<URI> discoveryServiceURI, ///discovery.uri
             NodeInfo nodeInfo,
             JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec,
             @ForDiscoveryClient HttpClient httpClient)
@@ -104,7 +104,7 @@ public class HttpDiscoveryLookupClient
         return lookup(serviceDescriptors.getType(), serviceDescriptors.getPool(), serviceDescriptors);
     }
 
-    private ListenableFuture<ServiceDescriptors> lookup(final String type, final String pool, final ServiceDescriptors serviceDescriptors)
+    private ListenableFuture<ServiceDescriptors> lookup(final String type, final String pool, final ServiceDescriptors serviceDescriptors) /// 主动询问
     {
         requireNonNull(type, "type is null");
 
@@ -113,9 +113,9 @@ public class HttpDiscoveryLookupClient
             return immediateFailedFuture(new DiscoveryException("No discovery servers are available"));
         }
 
-        uri = URI.create(uri + "/v1/service/" + type + "/");
+        uri = URI.create(uri + "/v1/service/" + type + "/");///presto
         if (pool != null) {
-            uri = uri.resolve(pool);
+            uri = uri.resolve(pool);///presto /v1/service/presto/general/
         }
 
         Builder requestBuilder = prepareGet()
@@ -148,7 +148,7 @@ public class HttpDiscoveryLookupClient
                     throw new DiscoveryException(format("Lookup of %s failed", type), e);
                 }
 
-                ServiceDescriptorsRepresentation serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json);
+                ServiceDescriptorsRepresentation serviceDescriptorsRepresentation = serviceDescriptorsCodec.fromJson(json); ///从json反序列化
                 if (!environment.equals(serviceDescriptorsRepresentation.getEnvironment())) {
                     throw new DiscoveryException(format("Expected environment to be %s, but was %s", environment, serviceDescriptorsRepresentation.getEnvironment()));
                 }

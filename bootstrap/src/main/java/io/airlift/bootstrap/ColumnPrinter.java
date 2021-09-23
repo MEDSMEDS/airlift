@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.toCollection;
 /**
  * A utility for outputting columnar text
  */
-class ColumnPrinter
+class ColumnPrinter///更新column长度，使输出对齐。
 {
     private static final int DEFAULT_MARGIN = 2;
 

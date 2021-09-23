@@ -23,6 +23,30 @@ import java.util.List;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
+///{'environment': 'production_239',
+///        'services': [{'id': 'e8c29d83-7bc2-4037-8e6b-4e8b99eb3f7f',
+///        'location': '/ffffffff-ffff-ffff-ffff-ffffffffffff',
+///        'nodeId': 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+///        'pool': 'general',
+///        'properties': {'connectorIds': '',
+///        'coordinator': 'true',
+///        'http': 'http://100.97.80.95:8082',
+///        'http-external': 'http://100.97.80.95:8082',
+///        'node_version': '0.239-339bacf',
+///        'thriftServerPort': '47966'},
+///        'type': 'presto'},
+///        {'id': '5a3b5027-db65-47ea-beeb-68fce0b6c7f6',
+///        'location': '/ffffffff-ffff-ffff-ffff-fffffffffffe',
+///        'nodeId': 'ffffffff-ffff-ffff-ffff-fffffffffffe',
+///        'pool': 'general',
+///        'properties': {'connectorIds': 'de3_mysql,system,de2_clickhouse,de1_es,de3_es,tpch,de1_mysql,tdw_hive,de1_postgre,redis',
+///        'coordinator': 'false',
+///        'http': 'http://10.101.41.3:8082',
+///        'http-external': 'http://10.101.41.3:8082',
+///        'node_version': '0.239-339bacf',
+///        'thriftServerPort': '33757'},
+///        'type': 'presto'}]}
+
 public class ServiceDescriptors
 {
     private final String type;

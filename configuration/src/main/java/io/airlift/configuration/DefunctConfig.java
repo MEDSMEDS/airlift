@@ -31,3 +31,6 @@ public @interface DefunctConfig
 {
     String[] value();
 }
+/// annotation http://tutorials.jenkov.com/java/annotations.html
+
+/// https://www.tutorialspoint.com/guice/guice_binding_annotations.htm

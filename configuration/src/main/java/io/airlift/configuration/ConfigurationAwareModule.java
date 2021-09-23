@@ -19,7 +19,7 @@ import com.google.common.annotations.Beta;
 import com.google.inject.Module;
 
 @Beta
-public interface ConfigurationAwareModule
+public interface ConfigurationAwareModule ///增加一个方法
         extends Module
 {
     void setConfigurationFactory(ConfigurationFactory configurationFactory);

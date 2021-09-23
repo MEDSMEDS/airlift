@@ -18,7 +18,7 @@ package io.airlift.bootstrap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class LifeCycleMethodsMap
+class LifeCycleMethodsMap /// ConcurrentHashMap
 {
     private final Map<Class<?>, LifeCycleMethods> map = new ConcurrentHashMap<>();
 

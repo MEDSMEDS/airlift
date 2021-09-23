@@ -64,7 +64,7 @@ public abstract class AbstractConfigurationAwareModule
         if (module instanceof ConfigurationAwareModule) {
             ((ConfigurationAwareModule) module).setConfigurationFactory(configurationFactory);
         }
-        binder.install(module);
+        binder.install(module);/// 调用module的configure
     }
 
     protected abstract void setup(Binder binder);

@@ -45,11 +45,11 @@ public class DiscoveryModule
     public void configure(Binder binder)
     {
         // bind service inventory
-        binder.bind(ServiceInventory.class).in(Scopes.SINGLETON);
+        binder.bind(ServiceInventory.class).in(Scopes.SINGLETON); ///presto没有用到
         configBinder(binder).bindConfig(ServiceInventoryConfig.class);
 
         // for legacy configurations
-        configBinder(binder).bindConfig(DiscoveryClientConfig.class);
+        configBinder(binder).bindConfig(DiscoveryClientConfig.class);/// presto的discovery.uri ServiceInventory和Discovery应该是两种不同的后台模型。
 
         // bind discovery client and dependencies
         binder.bind(DiscoveryLookupClient.class).to(HttpDiscoveryLookupClient.class).in(Scopes.SINGLETON);
@@ -66,10 +66,10 @@ public class DiscoveryModule
 
         // Must create a multibinder for service announcements or construction will fail if no
         // service announcements are bound, which is legal for processes that don't have public services
-        newSetBinder(binder, ServiceAnnouncement.class);
+        newSetBinder(binder, ServiceAnnouncement.class);///有副作用
 
         // bind selector factory
-        binder.bind(CachingServiceSelectorFactory.class).in(Scopes.SINGLETON);
+        binder.bind(CachingServiceSelectorFactory.class).in(Scopes.SINGLETON);/// DiscoveryLookupClient ScheduledExecutorService
         binder.bind(ServiceSelectorFactory.class).to(MergingServiceSelectorFactory.class).in(Scopes.SINGLETON);
 
         binder.bind(ScheduledExecutorService.class)
@@ -88,7 +88,7 @@ public class DiscoveryModule
     @ForDiscoveryClient
     public Supplier<URI> getDiscoveryUriSupplier(ServiceInventory serviceInventory, DiscoveryClientConfig config)
     {
-        URI serviceUri = config.getDiscoveryServiceURI();
+        URI serviceUri = config.getDiscoveryServiceURI();///presto直接返回这个玩意
 
         return () -> {
             for (ServiceDescriptor descriptor : serviceInventory.getServiceDescriptors("discovery")) {
@@ -115,12 +115,13 @@ public class DiscoveryModule
     @Provides
     @Singleton
     public MergingServiceSelectorFactory createMergingServiceSelectorFactory(
-            CachingServiceSelectorFactory factory,
+            CachingServiceSelectorFactory factory, ///直接指定
             Announcer announcer,
             NodeInfo nodeInfo)
     {
         return new MergingServiceSelectorFactory(factory, announcer, nodeInfo);
     }
+
 
     private static class DiscoveryExecutorProvider
             implements Provider<ScheduledExecutorService>

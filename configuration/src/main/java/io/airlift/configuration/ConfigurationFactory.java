@@ -87,7 +87,7 @@ public class ConfigurationFactory
     }
 
     private final Map<String, String> properties;
-    private final WarningsMonitor warningsMonitor;
+    private final WarningsMonitor warningsMonitor;//log::warn
     private final Problems.Monitor monitor;
     private final ConcurrentMap<ConfigurationProvider<?>, Object> instanceCache = new ConcurrentHashMap<>();
     private final Set<String> usedProperties = newConcurrentHashSet();
@@ -101,7 +101,7 @@ public class ConfigurationFactory
                 @Override
                 public ConfigurationMetadata<?> load(Class<?> configClass)
                 {
-                    return getConfigurationMetadata(configClass, monitor);
+                    return getConfigurationMetadata(configClass, monitor);///return new ConfigurationMetadata<>(configClass, monitor);
                 }
             });
 
@@ -161,7 +161,7 @@ public class ConfigurationFactory
                 .map(ConfigurationAwareModule.class::cast)
                 .forEach(module -> module.setConfigurationFactory(this));
 
-        for (Element element : Elements.getElements(modules)) {
+        for (Element element : Elements.getElements(modules)) { /// https://github.com/google/guice/wiki/InspectingModules
             element.acceptVisitor(new DefaultElementVisitor<Void>()
             {
                 @Override
@@ -186,7 +186,7 @@ public class ConfigurationFactory
                         ProviderInstanceBinding<?> providerInstanceBinding = (ProviderInstanceBinding<?>) binding;
                         Provider<?> provider = providerInstanceBinding.getUserSuppliedProvider();
                         if (provider instanceof ConfigurationProvider) {
-                            registerConfigurationProvider((ConfigurationProvider<?>) provider, Optional.of(binding.getSource()));
+                            registerConfigurationProvider((ConfigurationProvider<?>) provider, Optional.of(binding.getSource()));/// Key.get(configClass)
                         }
                     }
                     return null;
@@ -194,16 +194,16 @@ public class ConfigurationFactory
             });
         }
     }
-
+    /// Bootstrap调用。 configurationProvider设置两个变量。
     void registerConfigurationProvider(ConfigurationProvider<?> configurationProvider, Optional<Object> bindingSource)
     {
-        configurationProvider.setConfigurationFactory(this);
-        configurationProvider.setBindingSource(bindingSource);
+        configurationProvider.setConfigurationFactory(this);///configurationProvider的ConfigurationFactory是手动注入的。
+        configurationProvider.setBindingSource(bindingSource); /// Key.get(configClass)
 
         ImmutableList<Consumer<ConfigurationProvider<?>>> listeners = ImmutableList.of();
         synchronized (this) {
             if (registeredProviders.add(configurationProvider)) {
-                listeners = ImmutableList.copyOf(configurationBindingListeners);
+                listeners = ImmutableList.copyOf(configurationBindingListeners);///我看presto的时候，这种类型还不会用到。
             }
         }
         listeners.forEach(listener -> listener.accept(configurationProvider));
@@ -227,7 +227,7 @@ public class ConfigurationFactory
         for (ConfigurationProvider<?> configurationProvider : ImmutableList.copyOf(registeredProviders)) {
             try {
                 // call the getter which will cause object creation
-                configurationProvider.get();
+                configurationProvider.get();///并没有赋值。所以只是测试。
             }
             catch (ConfigurationException e) {
                 // if we got errors, add them to the errors list
@@ -346,7 +346,7 @@ public class ConfigurationFactory
         return (T) instanceCache.putIfAbsent(configurationProvider, instance);
     }
 
-    private <T> ConfigurationHolder<T> build(Class<T> configClass, Optional<String> configPrefix, ConfigDefaults<T> configDefaults)
+    private <T> ConfigurationHolder<T> build(Class<T> configClass, Optional<String> configPrefix, ConfigDefaults<T> configDefaults) /// 核心
     {
         if (configClass == null) {
             throw new NullPointerException("configClass is null");
@@ -359,16 +359,16 @@ public class ConfigurationFactory
         ConfigurationMetadata<T> configurationMetadata = getMetadata(configClass);
         configurationMetadata.getProblems().throwIfHasErrors();
 
-        T instance = newInstance(configurationMetadata);
+        T instance = newInstance(configurationMetadata);///核心
 
         configDefaults.setDefaults(instance);
 
         Problems problems = new Problems(monitor);
 
-        for (AttributeMetadata attribute : configurationMetadata.getAttributes().values()) {
+        for (AttributeMetadata attribute : configurationMetadata.getAttributes().values()) { /// attributes
             Problems attributeProblems = new Problems(monitor);
             try {
-                setConfigProperty(instance, attribute, prefix, attributeProblems);
+                setConfigProperty(instance, attribute, prefix, attributeProblems); ///核心
             }
             catch (InvalidConfigurationException e) {
                 attributeProblems.addError(e.getCause(), e.getMessage());
@@ -444,8 +444,8 @@ public class ConfigurationFactory
             throw exceptionFor(e, "Error creating instance of configuration class [%s]", configurationMetadata.getConfigClass().getName());
         }
     }
-
-    private <T> void setConfigProperty(T instance, AttributeMetadata attribute, String prefix, Problems problems)
+/// findOperativeInjectionPoint
+    private <T> void setConfigProperty(T instance, AttributeMetadata attribute, String prefix, Problems problems)///设置instance类。
             throws InvalidConfigurationException
     {
         // Get property value
@@ -481,9 +481,9 @@ public class ConfigurationFactory
         String operativeValue = null;
         if (operativeInjectionPoint != null) {
             operativeName = prefix + operativeInjectionPoint.getProperty();
-            operativeValue = properties.get(operativeName);
+            operativeValue = properties.get(operativeName);///匹配读进进来的配置值
         }
-        String printableOperativeValue = operativeValue;
+        String printableOperativeValue = operativeValue; ///需要打印出来
         if (attribute.isSecuritySensitive()) {
             printableOperativeValue = "[REDACTED]";
         }
@@ -520,7 +520,7 @@ public class ConfigurationFactory
             return null;
         }
 
-        return operativeInjectionPoint;
+        return operativeInjectionPoint; ///有配置的值，才注入。
     }
 
     private Object getInjectedValue(AttributeMetadata attribute, ConfigurationMetadata.InjectionPointMetaData injectionPoint, String prefix)

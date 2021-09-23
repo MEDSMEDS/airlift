@@ -19,7 +19,7 @@ public class MergingServiceSelector
     private final Announcer announcer;
     private final NodeInfo nodeInfo;
 
-    public MergingServiceSelector(ServiceSelector selector, Announcer announcer, NodeInfo nodeInfo)
+    public MergingServiceSelector(ServiceSelector selector, Announcer announcer, NodeInfo nodeInfo)///将selector和announer的服务合并
     {
         this.selector = requireNonNull(selector, "selector is null");
         this.announcer = requireNonNull(announcer, "announcer is null");

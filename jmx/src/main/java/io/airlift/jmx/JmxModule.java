@@ -45,7 +45,7 @@ public class JmxModule
         newExporter(binder).export(StackTraceMBean.class).withGeneratedName();
         binder.bind(StackTraceMBean.class).in(Scopes.SINGLETON);
 
-        discoveryBinder(binder).bindServiceAnnouncement(JmxAnnouncementProvider.class);
+        discoveryBinder(binder).bindServiceAnnouncement(JmxAnnouncementProvider.class);///jmx注册
 
         if (JavaVersion.current().getMajor() < 9) {
             binder.bind(JmxAgent8.class).in(Scopes.SINGLETON);

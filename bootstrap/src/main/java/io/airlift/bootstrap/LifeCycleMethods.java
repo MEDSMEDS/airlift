@@ -30,7 +30,7 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
-class LifeCycleMethods
+class LifeCycleMethods /// multimap。登记类中有PostConstruct PreDestroy注解的方法
 {
     private final Multimap<Class<? extends Annotation>, Method> methodMap = ArrayListMultimap.create();
 
@@ -58,7 +58,7 @@ class LifeCycleMethods
         }
 
         for (Method method : clazz.getDeclaredMethods()) {
-            if (method.isSynthetic() || method.isBridge()) {
+            if (method.isSynthetic() || method.isBridge()) {/// true if and only if this member was introduced by the compiler
                 continue;
             }
 
@@ -76,7 +76,7 @@ class LifeCycleMethods
     {
         if (method.isAnnotationPresent(annotationClass)) {
             if (!usedSet.contains(method.getName())) {
-                if (method.getParameterTypes().length != 0) {
+                if (method.getParameterTypes().length != 0) {/// 只接受无参的函数
                     throw new UnsupportedOperationException(format("@PostConstruct/@PreDestroy methods cannot have arguments: %s",
                             method.getDeclaringClass().getName() + "." + method.getName() + "(...)"));
                 }

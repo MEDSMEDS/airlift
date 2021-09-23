@@ -32,7 +32,7 @@ public final class ConfigurationLoader
 {
     private ConfigurationLoader() {}
 
-    public static Map<String, String> loadProperties()
+    public static Map<String, String> loadProperties()///包括系统属性
             throws IOException
     {
         Map<String, String> result = new TreeMap<>();

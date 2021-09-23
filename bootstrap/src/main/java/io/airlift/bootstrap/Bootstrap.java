@@ -145,7 +145,7 @@ public class Bootstrap
         return this;
     }
 
-    public Bootstrap strictConfig()
+    public Bootstrap strictConfig()///required config必须全部注册
     {
         this.strictConfig = true;
         return this;
@@ -157,7 +157,28 @@ public class Bootstrap
         this.requireExplicitBindings = requireExplicitBindings;
         return this;
     }
+/// 1、requiredProperties赋值
+/// 2、获取系统属性
+/// 3、替换环境变量
+/// 4、创建配置工厂
+/// 5、是否初始化配置模块
+/// 6、configurationProvider搞点事情，设置变量
+/// 7、测试configurationProvider是否创建成功。副作用：此时有些变量已经被修改。可以用来告警没用到的用户配置。
+/// 8、打印所有配置。
+/// 9、将所有模型注入。启动lifeCycleManager
+//java -cp /data/avonxu/presto/presto-server-0.242.1-SNAPSHOT/lib/* -server -Xmx169G -XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError
+//-Djdk.attach.allowAttachSelf=true -XX:+ExitOnOutOfMemoryError
+//-Dlog4j.configurationFile=/data/avonxu/presto-server-0.239/1.log
+//-Dlog.output-file=/var/presto239/data/var/log/server.log
+//-Dnode.data-dir=/var/presto239/data
+//-Dnode.id=ffffffff-ffff-ffff-ffff-ffffffffffff
+//-Dnode.environment=production_242
+//-Dlog.enable-console=false
+//-Dlog.levels-file=/data/avonxu/presto/presto-server-0.242.1-SNAPSHOT/etc/log.properties
+//-Dconfig=/data/avonxu/presto/presto-server-0.242.1-SNAPSHOT/etc/config.properties
+//com.facebook.presto.server.PrestoServer
 
+/// 通过系统变量读取config.properties来加载配置。java -Dkey=value，来把配置放入系统配置
     public Injector initialize()
     {
         Preconditions.checkState(!initialized, "Already initialized");
@@ -174,7 +195,7 @@ public class Bootstrap
 
         Map<String, String> requiredProperties;
         ConfigurationFactory configurationFactory;
-        if (requiredConfigurationProperties == null) {
+        if (requiredConfigurationProperties == null) {///一般是调用setRequiredConfigurationProperty设置。
             // initialize configuration
             log.info("Loading configuration");
 
@@ -182,7 +203,7 @@ public class Bootstrap
             String configFile = System.getProperty("config");
             if (configFile != null) {
                 try {
-                    requiredProperties = loadPropertiesFrom(configFile);
+                    requiredProperties = loadPropertiesFrom(configFile); /// 重要：配置从这里读取
                 }
                 catch (IOException e) {
                     throw new UncheckedIOException(e);
@@ -192,7 +213,7 @@ public class Bootstrap
         else {
             requiredProperties = requiredConfigurationProperties;
         }
-        Map<String, String> unusedProperties = new TreeMap<>(requiredProperties);
+        Map<String, String> unusedProperties = new TreeMap<>(requiredProperties);/// 在strictConfig下，计算是否有没用到的kv
 
         // combine property sources
         Map<String, String> properties = new HashMap<>();
@@ -204,8 +225,8 @@ public class Bootstrap
 
         // replace environment variables in property values
         properties = replaceEnvironmentVariables(properties, System.getenv(), (key, error) -> {
-            unusedProperties.remove(key);
-            messages.add(new Message(error));
+            unusedProperties.remove(key); /// 出错以后移除key
+            messages.add(new Message(error)); ///
         });
 
         // create configuration factory
@@ -221,14 +242,14 @@ public class Bootstrap
         }
 
         // Register configuration classes defined in the modules
-        configurationFactory.registerConfigurationClasses(modules);
+        configurationFactory.registerConfigurationClasses(modules);///此时还未装载
 
         // Validate configuration classes
-        messages.addAll(configurationFactory.validateRegisteredConfigurationProvider());
+        messages.addAll(configurationFactory.validateRegisteredConfigurationProvider());///只是测试
 
         // at this point all config file properties should be used
         // so we can calculate the unused properties
-        unusedProperties.keySet().removeAll(configurationFactory.getUsedProperties());
+        unusedProperties.keySet().removeAll(configurationFactory.getUsedProperties());///检查没用到的配置项
 
         if (strictConfig) {
             for (String key : unusedProperties.keySet()) {
@@ -236,7 +257,7 @@ public class Bootstrap
             }
         }
 
-        // Log effective configuration
+        // Log effective configuration 8
         if (!quiet) {
             logConfiguration(configurationFactory, unusedProperties);
         }
@@ -244,7 +265,7 @@ public class Bootstrap
         // system modules
         Builder<Module> moduleList = ImmutableList.builder();
         moduleList.add(new LifeCycleModule());
-        moduleList.add(new ConfigurationModule(configurationFactory));
+        moduleList.add(new ConfigurationModule(configurationFactory));/// 装载配置工厂
         if (!messages.isEmpty()) {
             moduleList.add(new ValidationErrorModule(messages));
         }
@@ -258,13 +279,13 @@ public class Bootstrap
 
         moduleList.addAll(modules);
 
-        // create the injector
+        // create the injector 9
         Injector injector = Guice.createInjector(Stage.PRODUCTION, moduleList.build());
 
         // Create the life-cycle manager
         LifeCycleManager lifeCycleManager = injector.getInstance(LifeCycleManager.class);
 
-        // Start services
+        // Start services 10
         if (lifeCycleManager.size() > 0) {
             lifeCycleManager.start();
         }

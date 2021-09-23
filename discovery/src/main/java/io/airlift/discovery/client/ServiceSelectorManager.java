@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 
 @Beta
 public class ServiceSelectorManager
-{
+{///没啥用
     private final Set<ServiceSelector> serviceSelectors;
 
     @Inject

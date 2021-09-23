@@ -69,7 +69,8 @@ public class ConfigurationMetadata<T>
     private final Constructor<T> constructor;
     private final Map<String, AttributeMetadata> attributes;
     private final Set<String> defunctConfig;
-
+    /// getConfigurationMetadata -> new ConfigurationMetadata -> buildAttributeMetadata -> findConfigMethods ->
+    /// findAnnotatedMethods -> findAnnotatedMethod(getDeclaredMethod，递归)
     private ConfigurationMetadata(Class<T> configClass, Monitor monitor)
     {
         if (configClass == null) {
@@ -87,7 +88,7 @@ public class ConfigurationMetadata<T>
         }
 
         this.defunctConfig = new HashSet<>();
-        if (configClass.isAnnotationPresent(DefunctConfig.class)) {
+        if (configClass.isAnnotationPresent(DefunctConfig.class)) {/// method of java.lang.Class class
             DefunctConfig defunctConfig = configClass.getAnnotation(DefunctConfig.class);
             if (defunctConfig.value().length < 1) {
                 problems.addError("@DefunctConfig annotation on class [%s] is empty", configClass.getName());
@@ -115,7 +116,7 @@ public class ConfigurationMetadata<T>
         }
         this.constructor = constructor;
 
-        this.attributes = ImmutableSortedMap.copyOf(buildAttributeMetadata(configClass));
+        this.attributes = ImmutableSortedMap.copyOf(buildAttributeMetadata(configClass)); ///核心
 
         // find invalid config methods not skipped by findConfigMethods()
         for (Class<?> clazz = configClass; (clazz != null) && !clazz.equals(Object.class); clazz = clazz.getSuperclass()) {
@@ -208,7 +209,7 @@ public class ConfigurationMetadata<T>
         return isValid;
     }
 
-    private boolean validateSetter(Method method)
+    private boolean validateSetter(Method method) ///确保是set函数
     {
         if (method == null) {
             return false;
@@ -226,7 +227,7 @@ public class ConfigurationMetadata<T>
 
         return true;
     }
-
+    /// buildAttributeMetadata -> findConfigMethods -> findAnnotatedMethods -> findAnnotatedMethod(getDeclaredMethod，递归)
     private Map<String, AttributeMetadata> buildAttributeMetadata(Class<T> configClass)
     {
         Map<String, AttributeMetadata> attributes = new HashMap<>();
@@ -277,16 +278,16 @@ public class ConfigurationMetadata<T>
             return null;
         }
 
-        String propertyName = configMethod.getAnnotation(Config.class).value();
+        String propertyName = configMethod.getAnnotation(Config.class).value(); ///核心 配置的名字。
         final boolean securitySensitive = configMethod.isAnnotationPresent(ConfigSecuritySensitive.class);
 
         // verify parameters
-        if (!validateSetter(configMethod)) {
+        if (!validateSetter(configMethod)) { /// 确保是setter
             return null;
         }
 
         // determine the attribute name
-        String attributeName = configMethod.getName().substring(3);
+        String attributeName = configMethod.getName().substring(3); ///函数名。需要拿来找setter
 
         AttributeMetaDataBuilder builder = new AttributeMetaDataBuilder(configClass, attributeName, securitySensitive);
 
@@ -295,7 +296,7 @@ public class ConfigurationMetadata<T>
         }
 
         // find the getter
-        Method getter = findGetter(configClass, configMethod, attributeName);
+        Method getter = findGetter(configClass, configMethod, attributeName); ///getter
         if (getter != null) {
             builder.setGetter(getter);
 
@@ -634,7 +635,7 @@ public class ConfigurationMetadata<T>
 
         // gather all publicly available methods
         // this returns everything, even if it's declared in a parent
-        for (Method method : configClass.getMethods()) {
+        for (Method method : configClass.getMethods()) { /// getMethods
             // skip methods that are used internally by the vm for implementing covariance, etc
             if (method.isSynthetic() || method.isBridge() || Modifier.isStatic(method.getModifiers())) {
                 continue;
@@ -663,7 +664,7 @@ public class ConfigurationMetadata<T>
         }
 
         if (configClass.getSuperclass() != null) {
-            Method managedMethod = findAnnotatedMethod(configClass.getSuperclass(), annotation, methodName, paramTypes);
+            Method managedMethod = findAnnotatedMethod(configClass.getSuperclass(), annotation, methodName, paramTypes); /// 递归查找
             if (managedMethod != null) {
                 return managedMethod;
             }

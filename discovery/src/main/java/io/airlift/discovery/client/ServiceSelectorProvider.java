@@ -45,7 +45,7 @@ public class ServiceSelectorProvider
     }
 
     @Inject
-    public void setServiceSelectorFactory(ServiceSelectorFactory serviceSelectorFactory)
+    public void setServiceSelectorFactory(ServiceSelectorFactory serviceSelectorFactory) /// MergingServiceSelectorFactory
     {
         requireNonNull(serviceSelectorFactory, "serviceSelectorFactory is null");
         this.serviceSelectorFactory = serviceSelectorFactory;
@@ -56,7 +56,7 @@ public class ServiceSelectorProvider
         requireNonNull(serviceSelectorFactory, "serviceSelectorFactory is null");
         requireNonNull(injector, "injector is null");
 
-        ServiceSelectorConfig selectorConfig = injector.getInstance(Key.get(ServiceSelectorConfig.class, serviceType(type)));
+        ServiceSelectorConfig selectorConfig = injector.getInstance(Key.get(ServiceSelectorConfig.class, serviceType(type)));/// 需要获取guice维护的某个实例。type参数不能事先知道，所以不能以写代码的方式进行注入。必须通过动态的方式获取。所以需要injector。
 
         ServiceSelector serviceSelector = serviceSelectorFactory.createServiceSelector(type, selectorConfig);
         return serviceSelector;

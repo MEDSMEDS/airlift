@@ -48,7 +48,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.stream.Collectors.toList;
 
-public class ServiceInventory
+public class ServiceInventory ///presto没用到
 {
     private static final Logger log = Logger.get(ServiceInventory.class);
 
@@ -59,7 +59,7 @@ public class ServiceInventory
     private final JsonCodec<ServiceDescriptorsRepresentation> serviceDescriptorsCodec;
     private final HttpClient httpClient;
 
-    private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>(ImmutableList.of());
+        private final AtomicReference<List<ServiceDescriptor>> serviceDescriptors = new AtomicReference<>(ImmutableList.of());
     private final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(daemonThreadsNamed("service-inventory-%s"));
     private final AtomicBoolean serverUp = new AtomicBoolean(true);
     private ScheduledFuture<?> scheduledFuture;
@@ -97,7 +97,7 @@ public class ServiceInventory
     @PostConstruct
     public synchronized void start()
     {
-        if (serviceInventoryUri == null || scheduledFuture != null) {
+        if (serviceInventoryUri == null || scheduledFuture != null) { /// 直接返回了。
             return;
         }
         scheduledFuture = executorService.scheduleAtFixedRate(() -> {

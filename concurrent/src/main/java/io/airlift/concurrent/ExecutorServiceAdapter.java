@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * Converts an Executor into a minimalistic ExecutorService
  */
-public class ExecutorServiceAdapter
+public class ExecutorServiceAdapter /// 将一个Executor包装成一个简单的ExecutorService。
         implements ExecutorService
 {
     private final Executor executor;

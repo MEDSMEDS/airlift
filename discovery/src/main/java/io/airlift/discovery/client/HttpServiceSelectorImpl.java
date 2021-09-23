@@ -49,7 +49,7 @@ public class HttpServiceSelectorImpl
     }
 
     @Override
-    public List<URI> selectHttpService()
+    public List<URI> selectHttpService()///过滤出http的服务。
     {
         List<ServiceDescriptor> serviceDescriptors = new ArrayList<>(serviceSelector.selectAllServices());
         if (serviceDescriptors.isEmpty()) {

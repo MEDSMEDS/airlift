@@ -48,7 +48,7 @@ class HttpServiceSelectorProvider
 
         ServiceSelector serviceSelector = injector.getInstance(Key.get(ServiceSelector.class, serviceType(type)));
 
-        HttpServiceSelector httpServiceSelector = new HttpServiceSelectorImpl(serviceSelector);
+        HttpServiceSelector httpServiceSelector = new HttpServiceSelectorImpl(serviceSelector);///在mergingserviceselector上面再套一层。
         return httpServiceSelector;
     }
 

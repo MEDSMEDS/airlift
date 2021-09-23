@@ -50,7 +50,7 @@ public class ConditionalModule<T>
     }
 
     @Override
-    protected void setup(Binder binder)
+    protected void setup(Binder binder)///搞事函数。嵌入configure中，只为了搞事。
     {
         T configuration = buildConfigObject(config);
         if (predicate.test(configuration)) {

@@ -7,7 +7,7 @@ import static java.util.Objects.requireNonNull;
 public class MergingServiceSelectorFactory
         implements ServiceSelectorFactory
 {
-    private final ServiceSelectorFactory selectorFactory;
+    private final ServiceSelectorFactory selectorFactory;///直接指定，不inject
     private final Announcer announcer;
     private final NodeInfo nodeInfo;
 

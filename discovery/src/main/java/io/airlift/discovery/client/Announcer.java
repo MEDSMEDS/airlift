@@ -64,8 +64,8 @@ public final class Announcer
             log);
 
     @Inject
-    public Announcer(DiscoveryAnnouncementClient announcementClient, Set<ServiceAnnouncement> serviceAnnouncements)
-    {
+    public Announcer(DiscoveryAnnouncementClient announcementClient, Set<ServiceAnnouncement> serviceAnnouncements)///通过bindhttpannouncement注入
+    {/// HttpDiscoveryAnnouncementClient
         requireNonNull(announcementClient, "client is null");
         requireNonNull(serviceAnnouncements, "serviceAnnouncements is null");
 
@@ -82,7 +82,7 @@ public final class Announcer
         return executorMBean;
     }
 
-    public void start()
+    public void start()///需要主动启动
     {
         Preconditions.checkState(!executor.isShutdown(), "Announcer has been destroyed");
         if (started.compareAndSet(false, true)) {

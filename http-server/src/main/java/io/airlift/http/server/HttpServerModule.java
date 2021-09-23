@@ -75,6 +75,6 @@ public class HttpServerModule
 
         eventBinder(binder).bindEventClient(HttpRequestEvent.class);
 
-        binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class).in(Scopes.SINGLETON);
+        binder.bind(AnnouncementHttpServerInfo.class).to(LocalAnnouncementHttpServerInfo.class).in(Scopes.SINGLETON);/// http-server.http.port
     }
 }

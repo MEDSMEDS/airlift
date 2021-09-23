@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
 
-public class ConfigurationModule
+public class ConfigurationModule ///配置 ConfigurationFactory
         implements Module
 {
     private final ConfigurationFactory configurationFactory;
@@ -51,12 +51,12 @@ public class ConfigurationModule
             protected void setup(Binder binder)
             {
                 Stream.of(modules)
-                        .forEach(this::install);
+                        .forEach(this::install);///this指代 ?
             }
         };
     }
 
-    private static <T> void bindConfigurationProvider(Binder binder, ConfigurationProvider<T> configurationProvider)
+    private static <T> void bindConfigurationProvider(Binder binder, ConfigurationProvider<T> configurationProvider)///
     {
         binder.bind(configurationProvider.getConfigurationBinding().getKey()).toProvider(configurationProvider);
     }
